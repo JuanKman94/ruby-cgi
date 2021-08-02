@@ -3,24 +3,25 @@
 
 require 'json'
 
-status = 'error'
-debug = {}
+status = :error
 
 def log(msg, level = 'DEBUG')
   STDERR.write "[#{level}] #{msg}\n"
 end
 
 if ENV['REQUEST_METHOD'] == 'POST'
+  fname = ENV['REMOTE_USER'].nil? ? 'list.json' : "#{ENV['REMOTE_USER']}_list.json"
   req_body = ARGF.read
+
   begin
     raise "Invalid parameters: '#{req_body}'." unless req_body.length > 0
 
     payload = JSON.parse(req_body, symbolize_names: true)
 
-    File.open('message.json', 'w') do |f|
-      f.write JSON.dump(payload)
+    File.open(fname, 'w') do |f|
+      f.write "#{JSON.dump(payload)}\n"
     end
-    status = 'ok'
+    status = :ok
   rescue StandardError => e
     log e.message, 'ERROR'
   end
