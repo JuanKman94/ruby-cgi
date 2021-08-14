@@ -1,0 +1,22 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    guard-compat (1.2.1)
+    guard-minitest (2.4.6)
+      guard-compat (~> 1.2)
+      minitest (>= 3.0)
+    minitest (5.14.4)
+    minitest-spec-context (0.0.4)
+    rake (13.0.6)
+
+PLATFORMS
+  x86_64-darwin-19
+
+DEPENDENCIES
+  guard-minitest (~> 2.4)
+  minitest (~> 5.14)
+  minitest-spec-context (~> 0.0.4)
+  rake (~> 13.0)
+
+BUNDLED WITH
+   2.2.21
