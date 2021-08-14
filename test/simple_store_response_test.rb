@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
-require_relative "../../lib/simple_store_response.rb"
+require_relative "../lib/simple_store_response.rb"
 
 class SimpleStoreResponseTest < Minitest::Spec
   describe "#body" do
