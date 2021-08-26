@@ -7,6 +7,7 @@ class SimpleStoreResponse
   HTTP_OK = 200
   HTTP_BAD_REQUEST = 400
   HTTP_NOT_FOUND = 404
+  VERSION = "0.1".freeze
 
   attr_reader :http_code, :body
 

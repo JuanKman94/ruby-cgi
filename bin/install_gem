@@ -1,0 +1,5 @@
+#!/bin/sh
+
+PROJECT_DIR="$(dirname $0)/.."
+
+gem install $PROJECT_DIR/*.gem
