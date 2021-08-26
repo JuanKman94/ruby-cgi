@@ -8,12 +8,13 @@ class SimpleStoreResponse
   HTTP_BAD_REQUEST = 400
   HTTP_NOT_FOUND = 404
 
-  attr_reader :http_status, :body
+  attr_reader :http_code, :body
 
-  def initialize(request_method, request_uri, request_body, logger: STDERR)
+  def initialize(request_method:, request_body:, filename:, storage:, logger: STDERR)
     @request_method = request_method
-    @request_uri = request_uri
     @request_body = request_body
+    @filename = filename
+    @storage = storage
     @log = Logger.new(logger, File::WRONLY | File::APPEND)
   end
 
@@ -26,10 +27,10 @@ class SimpleStoreResponse
     resp = {}
 
     if File.exist?(fname) && File.readable?(fname)
-      File.open(fname, "r") { |f| @body = f.read }
-      @http_status = HTTP_OK
+      resp[:data] = File.read(fname)
+      @http_code = HTTP_OK
     else
-      @http_status = HTTP_NOT_FOUND
+      @http_code = HTTP_NOT_FOUND
       resp[:error] = "Not found"
       @content_type = "application/json"
     end
@@ -39,11 +40,14 @@ class SimpleStoreResponse
 
   def process_post
     resp = {}
-    raise "File not writable" unless File.writable?(fname)
+    raise "Empty payload" if @request_body.nil? || @request_body.empty?
+
+    File.open(fname, File::WRONLY | File::CREAT) { |f| f.write @request_body }
+    @http_code = HTTP_OK
   rescue StandardError => e
     # catch every error as to not leak server info
     @log.error e.message
-    @http_status = HTTP_BAD_REQUEST
+    @http_code = HTTP_BAD_REQUEST
     resp[:error] = "Bad request"
     @content_type = "application/json"
   ensure
@@ -51,10 +55,8 @@ class SimpleStoreResponse
   end
 
   def content_type = @content_type || "text/plain"
-  def http_get? = @request_method == "GET"
-  def http_post? = @request_method == "POST"
+  def http_get? = @request_method.upcase == "GET"
+  def http_post? = @request_method.upcase == "POST"
 
-  def fname
-    @request_uri.split("/").last
-  end
+  def fname = "#{@storage}/#{@filename}"
 end

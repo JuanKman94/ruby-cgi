@@ -4,25 +4,96 @@ require "test_helper"
 require_relative "../lib/simple_store_response.rb"
 
 class SimpleStoreResponseTest < Minitest::Spec
-  describe "#body" do
-    let(:document_str) { '{"saludo":"hola"}' }
-    let(:request_uri) { "/path/to/file.json" }
+  describe "#http_code" do
+    before { subject.process_request! }
 
-    subject { SimpleStoreResponse.new(request_method, request_uri, req_body) }
+    let(:request_body) { nil }
+    let(:filename) { "file.json" }
+    let(:storage) { "#{File.dirname(__FILE__)}/fixtures" }
+    let(:fname) { "#{storage}/#{filename}" }
+
+    subject do
+      SimpleStoreResponse.new(
+        request_method: request_method,
+        request_body: request_body,
+        filename: filename,
+        storage: storage,
+        logger: nil
+      )
+    end
+
+    context "when request is GET" do
+      let(:request_method) { "GET" }
+
+      context "document exists" do
+        it "sets status to 200 OK" do
+          assert_equal 200, subject.http_code
+        end
+      end
+
+      context "document does not exist" do
+        let(:filename) { "notfound.json" }
+
+        it "sets status to 404 NOT FOUND" do
+          assert_equal 404, subject.http_code
+        end
+      end
+    end
+
+    context "when request is POST" do
+      let(:request_method) { "POST" }
+      let(:request_body) { "Test payload." }
+      let(:filename) { "new_filename" }
+
+      context "when request_body is not empty" do
+        after { File.unlink(fname) if File.exist?(fname) }
+
+        it "sets status to 200 OK" do
+          assert_equal 200, subject.http_code
+        end
+      end
+
+      context "when request_body is empty" do
+        let(:request_body) { "" }
+
+        it "sets status to 400 BAD REQUEST" do
+          assert_equal 400, subject.http_code
+        end
+      end
+    end
+  end
+
+  describe "#body" do
+    let(:document_str) { File.read(fname) }
+    let(:filename) { "file.json" }
+    let(:storage) { "#{File.dirname(__FILE__)}/fixtures" }
+    let(:fname) { "#{storage}/#{filename}" }
+
+    subject do
+      SimpleStoreResponse.new(
+        request_method: request_method,
+        request_body: request_body,
+        filename: filename,
+        storage: storage,
+        logger: nil
+      )
+    end
 
     before { subject.process_request! }
 
     context "when request is GET" do
       let(:request_method) { "GET" }
-      let(:req_body) { nil }
+      let(:request_body) { nil }
 
       context "document exists" do
-        it "matches document content" do
-          assert_match document_str, subject.body
+        it "sets content in data field" do
+          assert_match JSON.parse(subject.body)["data"], document_str
         end
       end
 
       context "document does not exist" do
+        let(:filename) { "notfound.json" }
+
         it "includes error" do
           assert_match "error", subject.body
         end
@@ -31,15 +102,19 @@ class SimpleStoreResponseTest < Minitest::Spec
 
     context "when request is POST" do
       let(:request_method) { "POST" }
-      let(:req_body) { document_str }
+      let(:request_body) { "Test payload." }
+      let(:filename) { "new_filename" }
 
-      context "when req_body is not empty" do
+      context "when request_body is not empty" do
+        after { File.unlink(fname) if File.exist?(fname) }
+
         it "stores the contents" do
+          assert_path_exists fname
         end
       end
 
-      context "when req_body is empty" do
-        let(:req_body) { "" }
+      context "when request_body is empty" do
+        let(:request_body) { "" }
 
         it "adds an error" do
           assert_match "error", subject.body
@@ -49,20 +124,14 @@ class SimpleStoreResponseTest < Minitest::Spec
   end
 
   describe "#fname" do
-    let(:http_method) { "GET" }
-    let(:http_uri) { "/path/to/file.json" }
-    subject { SimpleStoreResponse.new(http_method, http_uri, nil) }
+    let(:filename) { "file.json" }
+    let(:storage) { "#{File.dirname(__FILE__)}/fixtures" }
 
-    it "gives uri basename" do
-      assert_equal "file.json", subject.fname
-    end
+    subject { SimpleStoreResponse.new(request_method: nil, request_body: nil, filename: filename, storage: storage) }
 
-    context "when request is POST" do
-      let(:http_method) { "POST" }
-
-      it "gives uri basename" do
-        assert_equal "file.json", subject.fname
-      end
+    it "gives path" do
+      assert_includes subject.fname, filename
+      assert_includes subject.fname, storage
     end
   end
 end
