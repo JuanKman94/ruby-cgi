@@ -21,5 +21,10 @@ task package: [:clean] do |t|
   sh %{gem build #{NAME}.gemspec}
 end
 
+desc "Install gem"
+task install: [:package] do |t|
+  sh %{gem install #{NAME}-#{SimpleStoreResponse::VERSION}.gem}
+end
+
 desc "Run tests"
 task :test

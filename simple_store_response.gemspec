@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.name                  = "simple_store_response"
   s.version               = SimpleStoreResponse::VERSION
   s.platform              = Gem::Platform::RUBY
-  s.required_ruby_version = ">= 3"
+  s.required_ruby_version = ">= 2.5"
   s.summary               = "Simple CGI storage script response"
   s.description           = "CGI storage script response generator"
   s.authors               = ["juankman94"]

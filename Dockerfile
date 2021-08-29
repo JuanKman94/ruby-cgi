@@ -1,27 +1,8 @@
 FROM httpd:latest
 
-ENV RBENV_ROOT /usr/local/rbenv
-ENV PATH "$PATH:$RBENV_ROOT/bin"
-
-RUN apt-get update -q \
-    && apt-get remove -qqq ruby \
-    && apt-get install -qqq --assume-yes git curl autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm-dev
-
-# install rbenv & its plugins
-RUN git clone https://github.com/rbenv/rbenv.git $RBENV_ROOT \
-    && mkdir -p $RBENV_ROOT/plugins \
-    && git clone https://github.com/rbenv/ruby-build.git $RBENV_ROOT/plugins/ruby-build
-
-# install ruby 3
-RUN eval "$(rbenv init - bash)"
-RUN rbenv install 3.0.0
-RUN rbenv global 3.0.0
-
-ENV BASH_RBENV /etc/profile.d/rbenv.sh
-RUN touch $BASH_RBENV
-RUN echo 'export RBENV_ROOT="/usr/local/rbenv"' >> $BASH_RBENV
-RUN echo 'export PATH="$PATH:RBENV_ROOT/bin"' >> $BASH_RBENV
-RUN echo 'eval "$(rbenv init - bash)"' >> $BASH_RBENV
+RUN apt-get update -qqq \
+    && apt-get install --assume-yes --no-install-recommends -qqq ruby
+RUN gem install bundler
 
 # configure httpd
 RUN sed -i \
@@ -31,7 +12,20 @@ RUN sed -i \
     conf/httpd.conf
 
 RUN echo 'Include conf/custom/httpd-auth_basic.conf' >> conf/httpd.conf
+
+# setup simple store directory
 RUN mkdir /var/tmp/simplestore
 RUN chown -R daemon:daemon /var/tmp/simplestore
 
+# build & install gem
+WORKDIR /tmp/build
+COPY Gemfile Gemfile.lock Rakefile simple_store_response.gemspec /tmp/build
+ADD lib/ /tmp/build/lib
+RUN bundle install --without="development test"
+RUN bundle exec rake install
+
+WORKDIR /usr/local/apache2
 COPY conf/custom conf/custom
+
+# clean files
+RUN rm -fr /tmp/build

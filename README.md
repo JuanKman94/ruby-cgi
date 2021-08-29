@@ -16,11 +16,11 @@ $ echo "build the image"
 $ docker build . -t httpd:ruby-cgi
 $ echo "spin up a container"
 $ ./bin/run_httpd
-$ docker exec -it httpd-ruby-cgi bash
-% htpasswd -c conf/users.db test
-% eval "$(rbenv init - bash)"
-% gem install /opt/simple_store_response/simple*.gem
+$ docker exec -it httpd-ruby-cgi htpasswd -c conf/users.db test
 ```
+
+Now you can POST a message (given valid credentials) and later GET the contents
+via http://localhost:8080/cgi-bin/simple-store.
 
 [CGI script]: https://httpd.apache.org/docs/2.4/howto/cgi.html
 [CGI class]: https://ruby-doc.org/stdlib-3.0.2/libdoc/cgi/rdoc/CGI.html

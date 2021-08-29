@@ -1,4 +1,4 @@
-#!/usr/local/rbenv/versions/3.0.0/bin/ruby
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 require "simple_store_response"

@@ -66,9 +66,19 @@ class SimpleStoreResponse
     @body = JSON.dump(resp)
   end
 
-  def content_type = @content_type || "text/plain"
-  def http_get? = @request_method.upcase == "GET"
-  def http_post? = @request_method.upcase == "POST"
+  def content_type
+    @content_type || "text/plain"
+  end
 
-  def fname = "#{@storage}/#{@filename}"
+  def http_get?
+    @request_method.upcase == "GET"
+  end
+
+  def http_post?
+    @request_method.upcase == "POST"
+  end
+
+  def fname
+    "#{@storage}/#{@filename}"
+  end
 end
