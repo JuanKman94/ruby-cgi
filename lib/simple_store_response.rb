@@ -11,6 +11,14 @@ class SimpleStoreResponse
 
   attr_reader :http_code, :body
 
+  # Initialize store response processor
+  #
+  # @param [String] request_method HTTP request method
+  # @param [String] request_body HTTP request body, if applicable (POST, PUT, PATCH)
+  # @param [String] filename Filename for payload
+  # @param [String] storage Directory where payload will be stored.
+  #   NOTE: the effective user **MUST** have read & write permissions for this directory
+  # @param [String|Logger] logger Logger stream or instance
   def initialize(request_method:, request_body:, filename:, storage:, logger: STDERR)
     @request_method = request_method
     @request_body = request_body
@@ -43,7 +51,10 @@ class SimpleStoreResponse
     resp = {}
     raise "Empty payload" if @request_body.nil? || @request_body.empty?
 
-    File.open(fname, File::WRONLY | File::CREAT) { |f| f.write @request_body }
+    File.open(fname, File::WRONLY | File::CREAT) do |f|
+      f.write @request_body
+      f.truncate f.pos
+    end
     @http_code = HTTP_OK
   rescue StandardError => e
     # catch every error as to not leak server info

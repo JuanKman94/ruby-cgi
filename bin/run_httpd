@@ -1,12 +1,14 @@
 #!/bin/sh
 
 CONTAINER_IMAGE="httpd:ruby-cgi"
-CONTAINER_NAME="httpd:ruby-cgi"
+CONTAINER_NAME="httpd-ruby-cgi"
 
 docker run \
     --rm \
-    -d \
+    -t \
     -p 8080:80 \
+    -v $PWD:/opt/simple_store_response \
     -v $PWD/cgi-bin:/usr/local/apache2/cgi-bin \
+    -v $PWD/../mylist:/usr/local/apache2/htdocs \
     --name "$CONTAINER_NAME" \
     $CONTAINER_IMAGE

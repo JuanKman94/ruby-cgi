@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo "Content-Type: text/html"
+echo ""
+echo "<html><head></head><body><ul>"
+echo $PATH | tr ':' '\n' | awk '{ printf "<li>%s</li>\n", $1 }'
+echo "</ul>"
+echo "<p>which ruby: <code>$(which ruby)</code></p>"
+echo "<p>/usr/bin/env ruby --version: <code>$(/usr/bin/env ruby --version)</code></p>"
+echo "</body></html>"

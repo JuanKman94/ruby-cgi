@@ -1,34 +1,28 @@
-#!/usr/bin/env ruby
+#!/usr/local/rbenv/versions/3.0.0/bin/ruby
 # frozen_string_literal: true
 
-require 'json'
+require "simple_store_response"
 
-status = :error
-
-def log(msg, level = 'DEBUG')
+def log(msg, level = "DEBUG")
   STDERR.write "[#{level}] #{msg}\n"
 end
 
-if ENV['REQUEST_METHOD'] == 'POST'
-  fname = ENV['REMOTE_USER'].nil? ? 'list.json' : "#{ENV['REMOTE_USER']}_list.json"
-  req_body = ARGF.read
+resp = SimpleStoreResponse.new(
+  request_method: ENV["REQUEST_METHOD"],
+  request_body: ARGF.read,
+  filename: ENV["REMOTE_USER"],
+  storage: "/var/tmp/simplestore"
+)
 
-  begin
-    raise "Invalid parameters: '#{req_body}'." unless req_body.length > 0
-
-    payload = JSON.parse(req_body, symbolize_names: true)
-
-    File.open(fname, 'w') do |f|
-      f.write "#{JSON.dump(payload)}\n"
-    end
-    status = :ok
-  rescue StandardError => e
-    log e.message, 'ERROR'
-  end
+begin
+  resp.process_request!
+rescue StandardError => e
+  log e.message, "ERROR"
 end
 
 puts <<EOF
-Content-Type: application/json
+Status: #{resp.http_code}
+Content-Type: #{resp.content_type}
 
-{"status": "#{status}"}
+#{resp.body}
 EOF

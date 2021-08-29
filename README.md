@@ -16,9 +16,10 @@ $ echo "build the image"
 $ docker build . -t httpd:ruby-cgi
 $ echo "spin up a container"
 $ ./bin/run_httpd
-$ curl -X POST http://localhost:8080/cgi-bin/simple-store --data '{"message":"hello"}'
-$ cat cgi-bin/message.json
-{"message":"hello"}
+$ docker exec -it httpd-ruby-cgi bash
+% htpasswd -c conf/users.db test
+% eval "$(rbenv init - bash)"
+% gem install /opt/simple_store_response/simple*.gem
 ```
 
 [CGI script]: https://httpd.apache.org/docs/2.4/howto/cgi.html
