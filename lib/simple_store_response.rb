@@ -36,7 +36,7 @@ class SimpleStoreResponse
     resp = {}
 
     if File.exist?(fname) && File.readable?(fname)
-      resp[:data] = File.read(fname)
+      resp[:data] = File.read(fname, encoding: 'utf-8')
       @http_code = HTTP_OK
     else
       @http_code = HTTP_NOT_FOUND
